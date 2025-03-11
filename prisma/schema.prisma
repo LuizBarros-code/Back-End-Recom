@@ -1,0 +1,463 @@
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+//Usuarios
+model aluno {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  password        String
+  matricula       String   @unique
+  curso           String
+  dias            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  descarte descarte[]
+
+  doacao doacao[]
+
+  doacaoUsuario doacaoUsuario[]
+
+  solicitacao solicitacao[]
+
+  modificadorTeclado teclado[] @relation("ModificadorAluno")
+  usuarioTeclado teclado[] @relation("UsuarioAluno")
+  hd hd[] @relation("AlunoRelation")
+  modificadorHd hd[] @relation("ModificadorRelation")
+  fonteDeAlimentacao fontedealimentacao[] @relation("UsuarioAluno")
+  modificadorFonteDeAlimentacao fontedealimentacao[] @relation("ModificadorAluno")
+  gabinete gabinete[] @relation("UsuarioAluno")
+  modificadorGabinete gabinete[] @relation("ModificadorAluno")
+  monitor monitor[] @relation("UsuarioAluno")
+  modificadorMonitor monitor[] @relation("ModificadorAluno")
+  usuarioMouse mouse[] @relation("UsuarioAluno")
+  modificadorMouse mouse[] @relation("ModificadorAluno")
+  usuarioEstabilizador estabilizador[] @relation("UsuarioAluno")
+  modificadorEstabilizador estabilizador[] @relation("ModificadorAluno")
+  usuarioImpressora impressora[] @relation("UsuarioAluno")
+  modificadorImpressora impressora[] @relation("ModificadorAluno")
+  usuarioPlacamae placamae[] @relation("UsuarioAluno")
+  modificadorPlacamae placamae[] @relation("ModificadorAluno")
+  usuarioNotebook notebook[] @relation("UsuarioAluno")
+  modificadorNotebook notebook[] @relation("ModificadorAluno")
+  usuarioProcessador processador[] @relation("UsuarioAluno")
+  modificadorProcessador processador[] @relation("ModificadorAluno")
+}
+
+model pessoafisica {
+  id                       Int                     @id @default(autoincrement())
+  name                     String
+  email                    String                  @unique
+  password                 String
+  cpf                      String                  @unique
+  comprovanteDeBaixaRenda  String
+  telefone                 String
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  doacao doacao[]
+  doacaoUsuario doacaoUsuario[]
+
+  solicitacao solicitacao[]
+}
+
+model pessoajuridica {
+  id                       Int             @id @default(autoincrement())
+  name                     String
+  email                    String          @unique
+  password                 String
+  cnpj                     String          @unique
+  comprovanteDeProjeto     String
+  endereco                 String
+  telefone                 String
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+
+  doacao doacao[]
+
+  doacaoUsuario doacaoUsuario[]
+
+  solicitacao solicitacao[]
+}
+
+
+model inscrito {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  dias      String
+  matricula String   @unique
+  curso     String
+  periodo   String
+  bolsista  Boolean
+}
+
+
+//Eletronicos
+model teclado {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  nome                      String
+  imagem                    String
+  situacao                  String
+  tipoDeConexao             String
+  usuarioId                 Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [usuarioId], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model hd {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  nome                      String
+  imagem                    String
+  situacao                  String
+  tipoDeCapacidade          String
+  capacidade                Int
+  usuarioId                 Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  aluno                     aluno?   @relation("AlunoRelation", fields: [usuarioId], references: [id])
+  modificador               aluno?   @relation("ModificadorRelation", fields: [modificadorid], references: [id])
+}
+
+
+model fontedealimentacao {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  potencia                  Int
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model gabinete{
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model monitor{
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  polegadas                 Int
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model mouse{
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  tipoDeConexao             String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model estabilizador {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  potencia                  Int
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model impressora {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  tipoDeTinta               String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model placamae {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model notebook {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+model processador {
+  id                        Int      @id @default(autoincrement())
+  codigoDereferencia        String   @unique
+  descricao                 String
+  status                    String
+  dataDeChegada             DateTime
+  dataDeSaida               DateTime?
+  marca                     String
+  modelo                    String
+  nome                      String
+  imagem                    String
+  situacao                  String
+  updatedAt                 DateTime @updatedAt
+  alunoid                   Int?
+  modificadorid             Int?
+  descarteId                Int?
+  doacaoId                  Int?
+  doacao                    doacao? @relation(fields: [doacaoId], references: [id])
+  descarte                  descarte? @relation(fields: [descarteId], references: [id])
+  usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
+  modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+}
+
+
+//Saidas
+model descarte {
+  id                   Int        @id @default(autoincrement())
+  name                 String
+  descricao            String
+  data                 DateTime
+  codigoDeReferencias  String
+  usuario              aluno?     @relation(fields: [usuarioId], references: [id])
+  usuarioId            Int?
+  createdAt            DateTime   @default(now())
+
+  teclados              teclado[]
+  hds                   hd[]
+  fontesDeAlimentacao   fontedealimentacao[]
+  gabinetes             gabinete[]
+  monitores             monitor[]
+  mouses                mouse[]
+  estabilizadores       estabilizador[]
+  impressoras           impressora[]
+  placasmae             placamae[]
+  notebooks             notebook[]
+  processadores         processador[]
+}
+
+model doacao {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  codigoDeReferencias String
+  descricao           String
+  justificativa       String
+  nomeOuEmpresa       String
+  contato             String
+  data                DateTime
+  status              String
+  donatario           aluno? @relation(fields: [donatarioId], references: [id])
+  donatarioId         Int?
+  usuariofisico       pessoafisica? @relation(fields: [usuariofisicoId], references: [id])
+  usuariofisicoId     Int?
+  usuariojuridico     pessoajuridica? @relation(fields: [usuariojuridicoId], references: [id])
+  usuariojuridicoId   Int?
+  createdAt           DateTime @default(now())
+
+  teclados              teclado[]
+  hds                   hd[]
+  fontesDeAlimentacao   fontedealimentacao[]
+  gabinetes             gabinete[]
+  monitores             monitor[]
+  mouses                mouse[]
+  estabilizadores       estabilizador[]
+  impressoras           impressora[]
+  placasmae             placamae[]
+  notebooks             notebook[]
+  processadores         processador[]
+}
+
+model doacaoUsuario {
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  eletronicos           String
+  descricao             String
+  informacoesAdicionais String
+  horarioDeEntrega      String
+  contato               String
+  data                  DateTime
+  status                String
+  donatariofisico       pessoafisica? @relation(fields: [donatariofisicoId], references: [id])
+  donatariofisicoId     Int?
+  donatariojuridico     pessoajuridica? @relation(fields: [donatariojuridicoId], references: [id])
+  donatariojuridicoId   Int?
+  usuario               aluno? @relation(fields: [usuarioid], references: [id])
+  usuarioid             Int?
+  createdAt             DateTime @default(now())
+}
+
+model solicitacao {
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  eletronicos           String
+  descricao             String
+  informacoes           String
+  horarioparapegar      String
+  contato               String
+  data                  DateTime
+  dataparapegar         DateTime
+  status                String
+  usuariosolicitacaofisico    pessoafisica?   @relation(fields: [solicitacaofisicoId], references: [id])
+  solicitacaofisicoId     Int?
+  donatariojuridico     pessoajuridica? @relation(fields: [solicitacaojuridicoId], references: [id])
+  solicitacaojuridicoId   Int?
+  usuario               aluno? @relation(fields: [usuarioid], references: [id])
+  usuarioid             Int?
+  createdAt             DateTime @default(now())
+}
