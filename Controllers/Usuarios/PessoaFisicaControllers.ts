@@ -19,119 +19,132 @@ export class PessoaFisicaController {
         response.status(400).json({ message: "Email já está em uso" });
         return;
       }
+
+      // Hash da senha
       const hashedPassword = await bcrypt.hash(password, 10);
+
       const pessoaFisica = await prisma.pessoafisica.create({
         data: {
           name,
           cpf,
           email,
-          password: hashedPassword, // Hash the password before storing
-          comprovanteDeBaixaRenda, // Replace with actual comprovante logic
-          telefone, // Replace with actual telefone logic
+          password: hashedPassword,
+          comprovanteDeBaixaRenda,
+          telefone,
         },
       });
+
       response.status(201).json(pessoaFisica);
     } catch (error) {
       next(error);
     }
   };
 
-  // Método para ler pessoa física
+  // Método para ler pessoa física por ID
   read = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
       const pessoaFisica = await prisma.pessoafisica.findUnique({
         where: { id: parseInt(id) },
       });
+
       if (!pessoaFisica) {
-        response.status(404).json({ message: "Pessoa Física not found" });
-      } else {
-        response.status(200).json(pessoaFisica);
+        response.status(404).json({ message: "Pessoa Física não encontrada" });
+        return;
       }
+
+      response.status(200).json(pessoaFisica);
     } catch (error) {
       next(error);
     }
   };
 
+  // Método para verificar credenciais
   verifyCredentials = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password } = request.params; // Extraindo dos parâmetros da URL
+      const { email, password } = request.body; // Extraindo do corpo da requisição
       const pessoaFisica = await prisma.pessoafisica.findUnique({
         where: { email },
       });
+
       if (!pessoaFisica || !(await bcrypt.compare(password, pessoaFisica.password))) {
-        response.status(401).json({ message: "Invalid email or password" });
+        response.status(401).json({ message: "Email ou senha inválidos" });
         return;
       }
-      response.json({ message: "Credentials verified", pessoaFisica });
+
+      response.json({ message: "Credenciais verificadas", pessoaFisica });
     } catch (error) {
       next(error);
     }
   };
 
+  // Método para buscar pessoa física por email
   getByEmail = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { email } = request.params;
       const pessoaFisica = await prisma.pessoafisica.findUnique({
         where: { email },
       });
+
       if (!pessoaFisica) {
-        response.status(404).json({ message: "Pessoa Física not found" });
-      } else {
-        response.status(200).json(pessoaFisica);
+        response.status(404).json({ message: "Pessoa Física não encontrada" });
+        return;
       }
+
+      response.status(200).json(pessoaFisica);
     } catch (error) {
       next(error);
     }
   };
 
-  async getAllByName(req: Request, res: Response) {
+  // Método para buscar todas as pessoas físicas por nome
+  getAllByName = async (req: Request, res: Response): Promise<void> => {
     try {
       const names = await prisma.pessoafisica.findMany({
-        select: { id: true,name: true },
+        select: { id: true, name: true },
       });
-      res.json(names);
-    } catch (error) {
-      res.status(500).json({ error: "An error occurred while fetching names." });
-    }
-  }
-  
 
+      res.status(200).json(names);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar nomes." });
+    }
+  };
 
   // Método para atualizar pessoa física
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-        const { id } = request.params;
-        const { password, comprovanteDeBaixaRenda } = request.body;
+      const { id } = request.params;
+      const { name, email, password, comprovanteDeBaixaRenda, telefone } = request.body;
 
-        // Buscar a pessoa física pelo id
-        const pessoaFisica = await prisma.pessoafisica.findUnique({
-            where: { id: parseInt(id) },
-        });
+      // Buscar a pessoa física pelo ID
+      const pessoaFisica = await prisma.pessoafisica.findUnique({
+        where: { id: parseInt(id) },
+      });
 
-        if (!pessoaFisica) {
-            response.status(404).json({ message: "Pessoa Fisica not found" });
-            return;
-        }
+      if (!pessoaFisica) {
+        response.status(404).json({ message: "Pessoa Física não encontrada" });
+        return;
+      }
 
-        const dataToUpdate: any = {};
-        if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            dataToUpdate.password = hashedPassword;
-        }
-        if (comprovanteDeBaixaRenda) {
-          dataToUpdate.comprovanteDeBaixaRenda = comprovanteDeBaixaRenda;
-        }
+      const dataToUpdate: any = {};
+      if (name) dataToUpdate.name = name;
+      if (email) dataToUpdate.email = email;
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        dataToUpdate.password = hashedPassword;
+      }
+      if (comprovanteDeBaixaRenda) dataToUpdate.comprovanteDeBaixaRenda = comprovanteDeBaixaRenda;
+      if (telefone) dataToUpdate.telefone = telefone;
 
-        // Atualizar a pessoa física usando o id
-        const updatedPessoaFisica = await prisma.pessoafisica.update({
-            where: { id: pessoaFisica.id },
-            data: dataToUpdate,
-        });
+      // Atualizar a pessoa física
+      const updatedPessoaFisica = await prisma.pessoafisica.update({
+        where: { id: parseInt(id) },
+        data: dataToUpdate,
+      });
 
-        response.json({ message: "Pessoa Fisica updated successfully", updatedPessoaFisica });
+      response.status(200).json({ message: "Pessoa Física atualizada com sucesso", updatedPessoaFisica });
     } catch (error) {
-        next(error);
+      next(error);
     }
   };
 
@@ -139,10 +152,17 @@ export class PessoaFisicaController {
   delete = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      await prisma.pessoafisica.delete({
+
+      // Soft delete: marcar como deletado
+      const deletedPessoaFisica = await prisma.pessoafisica.update({
         where: { id: parseInt(id) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+        },
       });
-      response.status(204).send();
+
+      response.status(200).json({ message: "Pessoa Física deletada com sucesso", deletedPessoaFisica });
     } catch (error) {
       next(error);
     }
