@@ -32,9 +32,8 @@ model aluno {
   matricula       String   @unique
   curso           String
   dias            String
-  bolsista        Boolean @default(false)
   bolsistaTipo    String?
-  cargo           String 
+  cargo           String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   deleted         Boolean  @default(false)
@@ -125,7 +124,7 @@ model inscrito {
   matricula String   @unique
   curso     String
   periodo   String
-  bolsista  Boolean
+  bolsistaTipo  String?
 }
 
 
@@ -228,10 +227,7 @@ model hd {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   aluno                     aluno?   @relation("AlunoRelation", fields: [usuarioId], references: [id])
   modificador               aluno?   @relation("ModificadorRelation", fields: [modificadorid], references: [id])
-
-
-
-  imagem Imagem[]
+  imagem                    Imagem[]
 }
 
 
@@ -245,7 +241,6 @@ model fontedealimentacao {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   potencia                  Int
   updatedAt                 DateTime @updatedAt
@@ -261,6 +256,7 @@ model fontedealimentacao {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model gabinete{
@@ -273,7 +269,6 @@ model gabinete{
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   updatedAt                 DateTime @updatedAt
   alunoid                   Int?
@@ -288,6 +283,7 @@ model gabinete{
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model monitor{
@@ -300,7 +296,6 @@ model monitor{
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   polegadas                 Int
   updatedAt                 DateTime @updatedAt
@@ -316,6 +311,7 @@ model monitor{
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model mouse{
@@ -328,7 +324,6 @@ model mouse{
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   tipoDeConexao             String
   updatedAt                 DateTime @updatedAt
@@ -344,6 +339,7 @@ model mouse{
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model estabilizador {
@@ -356,7 +352,6 @@ model estabilizador {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   potencia                  Int
   updatedAt                 DateTime @updatedAt
@@ -372,6 +367,7 @@ model estabilizador {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model impressora {
@@ -384,7 +380,6 @@ model impressora {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   tipoDeTinta               String
   updatedAt                 DateTime @updatedAt
@@ -400,6 +395,7 @@ model impressora {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model placamae {
@@ -412,7 +408,6 @@ model placamae {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   updatedAt                 DateTime @updatedAt
   alunoid                   Int?
@@ -427,6 +422,7 @@ model placamae {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model notebook {
@@ -439,7 +435,6 @@ model notebook {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   updatedAt                 DateTime @updatedAt
   alunoid                   Int?
@@ -454,6 +449,7 @@ model notebook {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 model processador {
@@ -466,7 +462,6 @@ model processador {
   marca                     String
   modelo                    String
   nome                      String
-  imagem                    String
   situacao                  String
   updatedAt                 DateTime @updatedAt
   alunoid                   Int?
@@ -481,6 +476,7 @@ model processador {
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+  imagem                    Imagem[]
 }
 
 
@@ -596,17 +592,35 @@ model solicitacao {
 //imagem
 
 model Imagem {
-  id              Int      @id @default(autoincrement())
-  url             String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  tecladoId       Int?
-  hdId            Int?
-  deleted         Boolean  @default(false)
-  deletedAt       DateTime?
+  id                        Int      @id @default(autoincrement())
+  url                       String
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  tecladoId                 Int?
+  hdId                      Int?
+  fontedealimentacaoId      Int?
+  gabineteId                Int?
+  monitorId                 Int?
+  mouseId                   Int?
+  estabilizadorId           Int?
+  impressoraId              Int?
+  placamaeId                Int?
+  notebookId                Int?
+  processadorId             Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
 
-  teclado   teclado? @relation(fields: [tecladoId], references: [id])
-  hd        hd?      @relation(fields: [hdId], references: [id])
+  teclado                  teclado? @relation(fields: [tecladoId], references: [id])
+  hd                       hd?      @relation(fields: [hdId], references: [id])
+  fontedealimentacao       fontedealimentacao? @relation(fields: [fontedealimentacaoId], references: [id])
+  gabinete                 gabinete? @relation(fields: [gabineteId], references: [id])
+  monitor                  monitor? @relation(fields: [monitorId], references: [id])
+  mouse                    mouse? @relation(fields: [mouseId], references: [id])
+  estabilizador            estabilizador? @relation(fields: [estabilizadorId], references: [id])
+  impressora               impressora? @relation(fields: [impressoraId], references: [id])
+  placamae                 placamae? @relation(fields: [placamaeId], references: [id])
+  notebook                 notebook? @relation(fields: [notebookId], references: [id])
+  processador              processador? @relation(fields: [processadorId], references: [id])
 }
 
 

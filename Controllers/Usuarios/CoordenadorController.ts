@@ -17,6 +17,53 @@ export class CoordenadorController {
     }
   }
 
+  // Obter um coordenador por ID
+  async getById(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const coordenador = await prisma.coordenador.findUnique({
+        where: { id: Number(id) },
+      });
+      if (coordenador && !coordenador.deleted) {
+        res.status(200).json(coordenador);
+      } else {
+        res.status(404).json({ error: "Coordenador not found or deleted" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+
+    // Verificar e-mail e senha
+    async verifyEmailAndPassword(req: Request, res: Response): Promise<void> {
+      try {
+        const { email, password } = req.body; // Dados enviados no corpo da requisição
+    
+        // Buscar coordenador pelo e-mail
+        const coordenador = await prisma.coordenador.findUnique({
+          where: { email },
+        });
+    
+        if (!coordenador || coordenador.deleted) {
+          res.status(404).json({ error: "Coordenador not found or deleted" });
+          return;
+        }
+    
+        // Verificar a senha
+        const isPasswordValid = await bcrypt.compare(password, coordenador.password);
+    
+        if (!isPasswordValid) {
+          res.status(401).json({ error: "Invalid email or password" });
+          return;
+        }
+    
+        res.status(200).json({ message: "Login successful", coordenador });
+      } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+
   // Criar um novo coordenador
   async create(req: Request, res: Response): Promise<void> {
     try {

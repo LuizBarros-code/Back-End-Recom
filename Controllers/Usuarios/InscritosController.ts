@@ -30,7 +30,7 @@ export class InscritosController {
     }
 
     public async create(req: Request, res: Response): Promise<void> {
-        const { name, email, dias, matricula, curso, periodo, bolsista } = req.body;
+        const { name, email, dias, matricula, curso, periodo, bolsistaTipo } = req.body;
         try {
             const inscrito = await prisma.inscrito.create({
                 data: {
@@ -40,7 +40,7 @@ export class InscritosController {
                     matricula,
                     curso,
                     periodo,
-                    bolsista,
+                    bolsistaTipo
                 },
             });
             res.status(201).json(inscrito);

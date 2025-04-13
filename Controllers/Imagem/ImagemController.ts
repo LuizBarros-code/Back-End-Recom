@@ -9,6 +9,19 @@ export class ImagemController {
     try {
       const imagens = await prisma.imagem.findMany({
         where: { deleted: false }, // Excluir imagens marcadas como deletadas
+        include: {
+          teclado: true,
+          hd: true,
+          fontedealimentacao: true,
+          gabinete: true,
+          monitor: true,
+          mouse: true,
+          estabilizador: true,
+          impressora: true,
+          placamae: true,
+          notebook: true,
+          processador: true,
+        },
       });
       res.status(200).json(imagens);
     } catch (error) {
@@ -22,6 +35,19 @@ export class ImagemController {
       const { id } = req.params;
       const imagem = await prisma.imagem.findUnique({
         where: { id: Number(id) },
+        include: {
+          teclado: true,
+          hd: true,
+          fontedealimentacao: true,
+          gabinete: true,
+          monitor: true,
+          mouse: true,
+          estabilizador: true,
+          impressora: true,
+          placamae: true,
+          notebook: true,
+          processador: true,
+        },
       });
       if (imagem && !imagem.deleted) {
         res.status(200).json(imagem);
@@ -36,13 +62,41 @@ export class ImagemController {
   // Criar uma nova imagem
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const { url, tecladoId, hdId } = req.body;
+      if (!req.file) {
+        res.status(400).json({ error: "No file uploaded" });
+        return;
+      }
+
+      const {
+        tecladoId,
+        hdId,
+        fontedealimentacaoId,
+        gabineteId,
+        monitorId,
+        mouseId,
+        estabilizadorId,
+        impressoraId,
+        placamaeId,
+        notebookId,
+        processadorId,
+      } = req.body;
+
+      const fileUrl = `/uploads/${req.file.filename}`; // Caminho relativo do arquivo
 
       const newImagem = await prisma.imagem.create({
         data: {
-          url,
-          tecladoId,
-          hdId,
+          url: fileUrl,
+          tecladoId: tecladoId ? Number(tecladoId) : null,
+          hdId: hdId ? Number(hdId) : null,
+          fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
+          gabineteId: gabineteId ? Number(gabineteId) : null,
+          monitorId: monitorId ? Number(monitorId) : null,
+          mouseId: mouseId ? Number(mouseId) : null,
+          estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
+          impressoraId: impressoraId ? Number(impressoraId) : null,
+          placamaeId: placamaeId ? Number(placamaeId) : null,
+          notebookId: notebookId ? Number(notebookId) : null,
+          processadorId: processadorId ? Number(processadorId) : null,
         },
       });
 
@@ -56,14 +110,36 @@ export class ImagemController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { url, tecladoId, hdId } = req.body;
+      const {
+        url,
+        tecladoId,
+        hdId,
+        fontedealimentacaoId,
+        gabineteId,
+        monitorId,
+        mouseId,
+        estabilizadorId,
+        impressoraId,
+        placamaeId,
+        notebookId,
+        processadorId,
+      } = req.body;
 
       const updatedImagem = await prisma.imagem.update({
         where: { id: Number(id) },
         data: {
           url,
-          tecladoId,
-          hdId,
+          tecladoId: tecladoId ? Number(tecladoId) : null,
+          hdId: hdId ? Number(hdId) : null,
+          fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
+          gabineteId: gabineteId ? Number(gabineteId) : null,
+          monitorId: monitorId ? Number(monitorId) : null,
+          mouseId: mouseId ? Number(mouseId) : null,
+          estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
+          impressoraId: impressoraId ? Number(impressoraId) : null,
+          placamaeId: placamaeId ? Number(placamaeId) : null,
+          notebookId: notebookId ? Number(notebookId) : null,
+          processadorId: processadorId ? Number(processadorId) : null,
         },
       });
 

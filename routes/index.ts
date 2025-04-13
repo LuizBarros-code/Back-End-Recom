@@ -22,6 +22,7 @@ import MissaoController from "../Controllers/Missao/MissaoController";
 import ImagemController from "../Controllers/Imagem/ImagemController";
 import DataController from "../Controllers/Data/DataController";
 import RelatorioController from "../Controllers/Relatorio/RelatorioController";
+import upload from "../middlewares/upload";
 
 
 const router = Router();
@@ -52,6 +53,8 @@ const missaoController = new MissaoController();
 // Coordenador routes
 router.post("/coordenadores", coordenadorController.create);
 router.get("/coordenadores", coordenadorController.getAll);
+router.get("/coordenadores/:id", coordenadorController.getById);
+router.post("/coordenadores/verify", (req, res) => coordenadorController.verifyEmailAndPassword(req, res));
 router.put("/coordenadores/:email", coordenadorController.update);
 router.delete("/coordenadores/:id", coordenadorController.delete);
 
@@ -84,7 +87,9 @@ router.put("/pessoaFisicas/:id", pessoaFisicaController.update);
 router.delete("/pessoasFisicas/:id", pessoaFisicaController.delete);
 
 //imagem routes
-router.post("/imagens", imagemController.create);
+router.post("/imagens", upload.single("file"), (req, res) =>
+    imagemController.create(req, res)
+  );
 router.get("/imagens", imagemController.getAll);
 router.get("/imagens/:id", imagemController.getById);
 router.put("/imagens/:id", imagemController.update);
