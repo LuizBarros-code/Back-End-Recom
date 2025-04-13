@@ -17,6 +17,12 @@ import DoacaoController from "../Controllers/Saidas/DoacaoController";
 import DoacaoUsuarioController from "../Controllers/Saidas/DoacaoUsuarioController";
 import SolicitacaoController from "../Controllers/Saidas/SolicitacaoController";
 import { InscritosController } from '../Controllers/Usuarios/InscritosController';
+import CoordenadorController from "../Controllers/Usuarios/CoordenadorController";
+import MissaoController from "../Controllers/Missao/MissaoController";
+import ImagemController from "../Controllers/Imagem/ImagemController";
+import DataController from "../Controllers/Data/DataController";
+import RelatorioController from "../Controllers/Relatorio/RelatorioController";
+
 
 const router = Router();
 const alunoController = new AlunoController();
@@ -37,6 +43,17 @@ const doacaoController = new DoacaoController();
 const doacaoUsuarioController = new DoacaoUsuarioController();
 const solicitacaoController = new SolicitacaoController();
 const inscritosController = new InscritosController();
+const coordenadorController = new CoordenadorController();
+const imagemController = new ImagemController();
+const dataController = new DataController();
+const relatorioController = new RelatorioController();
+const missaoController = new MissaoController();
+
+// Coordenador routes
+router.post("/coordenadores", coordenadorController.create);
+router.get("/coordenadores", coordenadorController.getAll);
+router.put("/coordenadores/:email", coordenadorController.update);
+router.delete("/coordenadores/:id", coordenadorController.delete);
 
 
 // Aluno routes
@@ -48,7 +65,15 @@ router.put("/alunos/:email", alunoController.update);
 router.delete("/alunos/:id", alunoController.delete);
 
 
-// Pessoa Fisica routes
+// Missão routes
+router.post("/missoes", missaoController.create);
+router.get("/missoes", missaoController.getAll);
+router.get("/missoes/:id", missaoController.getById);
+router.put("/missoes/:id", missaoController.update);
+router.delete("/missoes/:id", missaoController.delete);
+
+
+
 // Pessoa Fisica routes
 router.post("/pessoasFisicas", pessoaFisicaController.create);
 router.get("/pessoasFisicas/names", pessoaFisicaController.getAllByName); // Rota específica antes
@@ -58,7 +83,26 @@ router.get("/pessoasFisicas/:id", pessoaFisicaController.read); // Rota dinâmic
 router.put("/pessoaFisicas/:id", pessoaFisicaController.update);
 router.delete("/pessoasFisicas/:id", pessoaFisicaController.delete);
 
+//imagem routes
+router.post("/imagens", imagemController.create);
+router.get("/imagens", imagemController.getAll);
+router.get("/imagens/:id", imagemController.getById);
+router.put("/imagens/:id", imagemController.update);
+router.delete("/imagens/:id", imagemController.delete);
 
+// Data routes
+router.post("/datas", dataController.create);
+router.get("/datas", dataController.getAll);
+router.get("/datas/:id", dataController.getById);
+router.put("/datas/:id", dataController.update);
+router.delete("/datas/:id", dataController.delete);
+
+// Relatorio routes
+router.post("/relatorios", relatorioController.create);
+router.get("/relatorios", relatorioController.getAll);
+router.get("/relatorios/:id", relatorioController.getById);
+router.put("/relatorios/:id", relatorioController.update);
+router.delete("/relatorios/:id", relatorioController.delete);
 
 
 // Pessoa Juridica routes

@@ -8,7 +8,7 @@ export class AlunoController {
   // Método para criar aluno
   create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { name, email, password, matricula, curso,dias } = request.body;
+      const { name, email, password, matricula, curso, dias, bolsista, bolsistaTipo, cargo } = request.body;
       const hashedPassword = await bcrypt.hash(password, 10);
       const aluno = await prisma.aluno.create({
         data: {
@@ -17,7 +17,10 @@ export class AlunoController {
           password: hashedPassword,
           matricula,
           curso,
-          dias
+          dias,
+          bolsista,
+          bolsistaTipo,
+          cargo,
         },
       });
       response.status(201).json(aluno);
@@ -26,7 +29,7 @@ export class AlunoController {
     }
   };
 
-  // Método para ler aluno
+  // Método para ler aluno por ID
   read = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
@@ -43,7 +46,7 @@ export class AlunoController {
     }
   };
 
-  //Metodo para buscar aluno por matricula
+  // Método para buscar aluno por matrícula
   getByMatricula = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { matricula } = request.params;
@@ -63,7 +66,7 @@ export class AlunoController {
   // Método para verificar matrícula e senha
   verifyCredentials = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { matricula, password } = request.params; // Extraindo dos parâmetros da URL
+      const { matricula, password } = request.body; // Extraindo do corpo da requisição
       const aluno = await prisma.aluno.findUnique({
         where: { matricula },
       });
@@ -80,12 +83,21 @@ export class AlunoController {
   // Método para atualizar aluno
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email } = request.params;
-      const { password } = request.body;
+      const { id } = request.params;
+      const { name, email, password, curso, dias, bolsista, bolsistaTipo, cargo } = request.body;
+      const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+
       const aluno = await prisma.aluno.update({
-        where: { id: parseInt(email) },
+        where: { id: parseInt(id) },
         data: {
-          password,
+          name,
+          email,
+          password: hashedPassword,
+          curso,
+          dias,
+          bolsista,
+          bolsistaTipo,
+          cargo,
         },
       });
       response.json(aluno);
@@ -94,14 +106,18 @@ export class AlunoController {
     }
   };
 
-  // Método para deletar aluno
+  // Método para deletar aluno (soft delete)
   delete = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      await prisma.aluno.delete({
+      const aluno = await prisma.aluno.update({
         where: { id: parseInt(id) },
+        data: {
+          deleted: true,
+          deletedAt: new Date(),
+        },
       });
-      response.status(204).send();
+      response.status(200).json({ message: "Aluno deleted successfully", aluno });
     } catch (error) {
       next(error);
     }

@@ -10,6 +10,20 @@ datasource db {
 
 
 //Usuarios
+
+model coordenador{
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  telefone        String?
+  password        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
+}
+
+
 model aluno {
   id              Int      @id @default(autoincrement())
   name            String
@@ -18,8 +32,17 @@ model aluno {
   matricula       String   @unique
   curso           String
   dias            String
+  bolsista        Boolean @default(false)
+  bolsistaTipo    String?
+  cargo           String 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
+
+  relatorio relatorio[]
+
+  missao missao[]
 
   descarte descarte[]
 
@@ -63,6 +86,8 @@ model pessoafisica {
   telefone                 String
   createdAt                DateTime                @default(now())
   updatedAt                DateTime                @updatedAt
+  deleted                  Boolean  @default(false)
+  deletedAt                DateTime?
 
   doacao doacao[]
   doacaoUsuario doacaoUsuario[]
@@ -81,6 +106,8 @@ model pessoajuridica {
   telefone                 String
   createdAt                DateTime        @default(now())
   updatedAt                DateTime        @updatedAt
+  deleted                  Boolean  @default(false)
+  deletedAt                DateTime?
 
   doacao doacao[]
 
@@ -102,6 +129,47 @@ model inscrito {
 }
 
 
+//missão
+
+model missao {
+  id              Int      @id @default(autoincrement())
+  titulo          String
+  descricao       String
+  dataLimite      DateTime
+  usuarioId       Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
+
+  usuario         aluno   @relation(fields: [usuarioId], references: [id])
+}
+
+
+//relatórios
+model relatorio {
+  id              Int      @id @default(autoincrement())
+  name            String
+  resumo          String
+  periodo         String
+  atividades      String
+  objetivos       String
+  desafios        String
+  proximosPassos  String
+  feedback        String?
+  usuarioId       Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
+  aprovado        Boolean  @default(false)
+
+
+
+  usuario         aluno   @relation(fields: [usuarioId], references: [id])
+}
+
+
 //Eletronicos
 model teclado {
   id                        Int      @id @default(autoincrement())
@@ -115,17 +183,22 @@ model teclado {
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
   nome                      String
-  imagem                    String
   situacao                  String
   tipoDeConexao             String
   usuarioId                 Int?
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [usuarioId], references: [id])
   modificador               aluno? @relation("ModificadorAluno", fields: [modificadorid], references: [id])
+
+
+  imagem Imagem[]
 }
 
 model hd {
@@ -140,7 +213,6 @@ model hd {
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
   nome                      String
-  imagem                    String
   situacao                  String
   tipoDeCapacidade          String
   capacidade                Int
@@ -148,10 +220,18 @@ model hd {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   aluno                     aluno?   @relation("AlunoRelation", fields: [usuarioId], references: [id])
   modificador               aluno?   @relation("ModificadorRelation", fields: [modificadorid], references: [id])
+
+
+
+  imagem Imagem[]
 }
 
 
@@ -173,6 +253,10 @@ model fontedealimentacao {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -196,6 +280,10 @@ model gabinete{
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -220,6 +308,10 @@ model monitor{
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -244,6 +336,10 @@ model mouse{
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -268,6 +364,10 @@ model estabilizador {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -292,6 +392,10 @@ model impressora {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -315,6 +419,10 @@ model placamae {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -338,6 +446,10 @@ model notebook {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -361,6 +473,10 @@ model processador {
   modificadorid             Int?
   descarteId                Int?
   doacaoId                  Int?
+  deleted                   Boolean  @default(false)
+  deletedAt                 DateTime?
+
+
   doacao                    doacao? @relation(fields: [doacaoId], references: [id])
   descarte                  descarte? @relation(fields: [descarteId], references: [id])
   usuario                   aluno? @relation("UsuarioAluno", fields: [alunoid], references: [id])
@@ -378,6 +494,8 @@ model descarte {
   usuario              aluno?     @relation(fields: [usuarioId], references: [id])
   usuarioId            Int?
   createdAt            DateTime   @default(now())
+  deleted              Boolean  @default(false)
+  deletedAt            DateTime?
 
   teclados              teclado[]
   hds                   hd[]
@@ -409,6 +527,9 @@ model doacao {
   usuariojuridico     pessoajuridica? @relation(fields: [usuariojuridicoId], references: [id])
   usuariojuridicoId   Int?
   createdAt           DateTime @default(now())
+  deleted             Boolean  @default(false)
+  deletedAt           DateTime?
+
 
   teclados              teclado[]
   hds                   hd[]
@@ -433,6 +554,10 @@ model doacaoUsuario {
   contato               String
   data                  DateTime
   status                String
+  deleted               Boolean  @default(false)
+  deletedAt             DateTime?
+
+
   donatariofisico       pessoafisica? @relation(fields: [donatariofisicoId], references: [id])
   donatariofisicoId     Int?
   donatariojuridico     pessoajuridica? @relation(fields: [donatariojuridicoId], references: [id])
@@ -453,6 +578,10 @@ model solicitacao {
   data                  DateTime
   dataparapegar         DateTime
   status                String
+  deleted               Boolean  @default(false)
+  deletedAt             DateTime?
+
+
   usuariosolicitacaofisico    pessoafisica?   @relation(fields: [solicitacaofisicoId], references: [id])
   solicitacaofisicoId     Int?
   donatariojuridico     pessoajuridica? @relation(fields: [solicitacaojuridicoId], references: [id])
@@ -460,4 +589,35 @@ model solicitacao {
   usuario               aluno? @relation(fields: [usuarioid], references: [id])
   usuarioid             Int?
   createdAt             DateTime @default(now())
+}
+
+
+
+//imagem
+
+model Imagem {
+  id              Int      @id @default(autoincrement())
+  url             String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tecladoId       Int?
+  hdId            Int?
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
+
+  teclado   teclado? @relation(fields: [tecladoId], references: [id])
+  hd        hd?      @relation(fields: [hdId], references: [id])
+}
+
+
+//data
+
+model data{
+  id              Int      @id @default(autoincrement())
+  data            DateTime @default(now())
+  disponibilidade Boolean
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deleted         Boolean  @default(false)
+  deletedAt       DateTime?
 }
