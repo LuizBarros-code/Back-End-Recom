@@ -25,6 +25,7 @@ export class PessoaJuridicaController {
 
       const pessoaJuridica = await prisma.pessoajuridica.create({
         data: {
+          tipo: "juridica",
           name,
           cnpj,
           email,

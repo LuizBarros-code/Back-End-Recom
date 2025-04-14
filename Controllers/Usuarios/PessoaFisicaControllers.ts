@@ -25,6 +25,7 @@ export class PessoaFisicaController {
 
       const pessoaFisica = await prisma.pessoafisica.create({
         data: {
+          tipo: "fisica",
           name,
           cpf,
           email,

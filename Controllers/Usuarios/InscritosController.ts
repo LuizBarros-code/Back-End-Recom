@@ -40,7 +40,8 @@ export class InscritosController {
                     matricula,
                     curso,
                     periodo,
-                    bolsistaTipo
+                    bolsistaTipo,
+                    status: 'Pendente', // Add a default or dynamic value for 'status'
                 },
             });
             res.status(201).json(inscrito);
@@ -62,6 +63,7 @@ export class InscritosController {
                     matricula,
                     curso,
                     periodo,
+                    status
                 },
             });
             res.status(200).json(inscrito);
