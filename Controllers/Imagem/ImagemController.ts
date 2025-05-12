@@ -1,7 +1,22 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import multer from "multer";
+import path from "path";
 
+// Instância do Prisma
 const prisma = new PrismaClient();
+
+// Configuração do multer para fazer o upload de arquivos
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Defina o diretório onde as imagens serão salvas
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Nome único para o arquivo
+  },
+});
+
+const upload = multer({ storage: storage }).single("image"); // O campo de upload será chamado "image"
 
 export class ImagemController {
   // Obter todas as imagens
@@ -60,50 +75,60 @@ export class ImagemController {
   }
 
   // Criar uma nova imagem
-  async create(req: Request, res: Response): Promise<void> {
-    try {
-      if (!req.file) {
-        res.status(400).json({ error: "No file uploaded" });
-        return;
+  create(req: Request, res: Response): void {
+    upload(req, res, async (err: any) => {
+      if (err instanceof multer.MulterError) {
+        // Erro relacionado ao multer
+        return res.status(500).json({ error: "File upload error" });
+      } else if (err) {
+        // Outro tipo de erro
+        return res.status(500).json({ error: "Internal server error" });
       }
 
-      const {
-        tecladoId,
-        hdId,
-        fontedealimentacaoId,
-        gabineteId,
-        monitorId,
-        mouseId,
-        estabilizadorId,
-        impressoraId,
-        placamaeId,
-        notebookId,
-        processadorId,
-      } = req.body;
+      // Verificar se o arquivo foi enviado
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
 
-      const fileUrl = `/uploads/${req.file.filename}`; // Caminho relativo do arquivo
+      try {
+        const {
+          tecladoId,
+          hdId,
+          fontedealimentacaoId,
+          gabineteId,
+          monitorId,
+          mouseId,
+          estabilizadorId,
+          impressoraId,
+          placamaeId,
+          notebookId,
+          processadorId,
+        } = req.body;
 
-      const newImagem = await prisma.imagem.create({
-        data: {
-          url: fileUrl,
-          tecladoId: tecladoId ? Number(tecladoId) : null,
-          hdId: hdId ? Number(hdId) : null,
-          fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
-          gabineteId: gabineteId ? Number(gabineteId) : null,
-          monitorId: monitorId ? Number(monitorId) : null,
-          mouseId: mouseId ? Number(mouseId) : null,
-          estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
-          impressoraId: impressoraId ? Number(impressoraId) : null,
-          placamaeId: placamaeId ? Number(placamaeId) : null,
-          notebookId: notebookId ? Number(notebookId) : null,
-          processadorId: processadorId ? Number(processadorId) : null,
-        },
-      });
+        const fileUrl = `/uploads/${req.file.filename}`; // Caminho relativo do arquivo
 
-      res.status(201).json(newImagem);
-    } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
-    }
+        const newImagem = await prisma.imagem.create({
+          data: {
+            url: fileUrl,
+            tecladoId: tecladoId ? Number(tecladoId) : null,
+            hdId: hdId ? Number(hdId) : null,
+            fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
+            gabineteId: gabineteId ? Number(gabineteId) : null,
+            monitorId: monitorId ? Number(monitorId) : null,
+            mouseId: mouseId ? Number(mouseId) : null,
+            estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
+            impressoraId: impressoraId ? Number(impressoraId) : null,
+            placamaeId: placamaeId ? Number(placamaeId) : null,
+            notebookId: notebookId ? Number(notebookId) : null,
+            processadorId: processadorId ? Number(processadorId) : null,
+          },
+        });
+
+        res.status(201).json(newImagem);
+      } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+      }
+    });
   }
 
   // Atualizar uma imagem existente
