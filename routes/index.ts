@@ -63,7 +63,7 @@ router.delete("/coordenadores/:id", coordenadorController.delete);
 router.post("/alunos", alunoController.create);
 router.get("/alunos/:id", alunoController.read);
 router.get('/alunos/matricula/:matricula', alunoController.getByMatricula);
-router.get("/alunos/verify/:matricula/:password", alunoController.verifyCredentials);
+router.post("/alunos/verify", alunoController.verifyCredentials);
 router.put("/alunos/:email", alunoController.update);
 router.delete("/alunos/:id", alunoController.delete);
 

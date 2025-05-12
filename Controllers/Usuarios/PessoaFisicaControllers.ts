@@ -30,7 +30,7 @@ export class PessoaFisicaController {
           cpf,
           email,
           password: hashedPassword,
-          comprovanteDeBaixaRenda,
+          comprovanteDeBaixaRenda: "",
           telefone,
         },
       });

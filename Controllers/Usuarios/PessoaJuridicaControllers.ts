@@ -30,7 +30,7 @@ export class PessoaJuridicaController {
           cnpj,
           email,
           password: hashedPassword,
-          comprovanteDeProjeto,
+          comprovanteDeProjeto: "",
           telefone,
           endereco,
         },
