@@ -18,9 +18,9 @@ export class DoacaoUsuarioController {
           contato,
           data: new Date(data),
           status,
-          donatariofisico,
-          donatariojuridico,
-          usuario
+          donatariofisicoId: donatariofisico || null,
+          donatariojuridicoId: donatariojuridico || null,
+          usuarioid: usuario || null,
         },
       });
       response.status(201).json(doacaoUsuario);

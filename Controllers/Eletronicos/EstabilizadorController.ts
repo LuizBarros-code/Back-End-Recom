@@ -75,41 +75,25 @@ export class EstabilizadorController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        situacao,
-        potencia,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
+
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
+        return;
+      }
+
+      // Buscar o registro atual para preencher o campo não enviado
+      const estabilizadorAtual = await prisma.estabilizador.findUnique({ where: { id: Number(id) } });
+      if (!estabilizadorAtual) {
+        res.status(404).json({ error: 'Estabilizador not found' });
+        return;
+      }
+      if (status === undefined) status = estabilizadorAtual.status;
+      if (situacao === undefined) situacao = estabilizadorAtual.situacao;
 
       const updatedEstabilizador = await prisma.estabilizador.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          situacao,
-          potencia,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
       res.status(200).json(updatedEstabilizador);
     } catch (error) {
@@ -124,6 +108,23 @@ export class EstabilizadorController {
         where: { id: Number(id) },
       });
       res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const estabilizador = await prisma.estabilizador.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!estabilizador || !estabilizador.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este estabilizador' });
+        return;
+      }
+      res.status(200).json(estabilizador.descarte);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

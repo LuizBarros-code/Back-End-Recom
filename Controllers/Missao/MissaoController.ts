@@ -33,15 +33,33 @@ export class MissaoController {
     }
   }
 
+  //metodo para obter todas as missões de um usuário específico
+  async getByUserId(req: Request, res: Response): Promise<void> {
+    try {
+      const { usuarioId } = req.params;
+      const missoes = await prisma.missao.findMany({
+        where: {
+          usuarioId: Number(usuarioId),
+          deleted: false, // Excluir missões marcadas como deletadas
+        },
+      });
+      res.status(200).json(missoes);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  
   // Criar uma nova missão
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const { titulo, descricao, dataLimite, usuarioId } = req.body;
+      const { titulo, descricao, status,dataLimite, usuarioId } = req.body;
 
       const newMissao = await prisma.missao.create({
         data: {
           titulo,
           descricao,
+          status: "pendente",
           dataLimite: new Date(dataLimite),
           usuarioId,
         },
@@ -57,14 +75,15 @@ export class MissaoController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { titulo, descricao, dataLimite } = req.body;
+      const { titulo, descricao, dataLimite, status } = req.body;
 
       const updatedMissao = await prisma.missao.update({
         where: { id: Number(id) },
         data: {
-          titulo,
-          descricao,
-          dataLimite: new Date(dataLimite),
+          ...(titulo !== undefined && { titulo }),
+          ...(descricao !== undefined && { descricao }),
+          ...(status !== undefined && { status }),
+          ...(dataLimite !== undefined && { dataLimite: new Date(dataLimite) }),
         },
       });
 

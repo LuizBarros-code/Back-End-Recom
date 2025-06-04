@@ -40,15 +40,15 @@ export class GabineteController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
+        potencia,
         alunoid,
         modificadorid,
         descarteId,
         doacaoId
       } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
+      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !situacao || !potencia) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
       }
@@ -63,7 +63,6 @@ export class GabineteController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
           alunoid,
           modificadorid,
@@ -80,45 +79,25 @@ export class GabineteController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
-        res.status(400).json({ error: 'Missing required fields' });
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
+        return;
       }
+
+      // Buscar o registro atual para preencher o campo não enviado
+      const gabineteAtual = await prisma.gabinete.findUnique({ where: { id: Number(id) } });
+      if (!gabineteAtual) {
+        res.status(404).json({ error: 'Gabinete not found' });
+        return;
+      }
+      if (status === undefined) status = gabineteAtual.status;
+      if (situacao === undefined) situacao = gabineteAtual.situacao;
 
       const updatedGabinete = await prisma.gabinete.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
       res.status(200).json(updatedGabinete);
     } catch (error) {
@@ -133,6 +112,23 @@ export class GabineteController {
         where: { id: Number(id) },
       });
       res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const gabinete = await prisma.gabinete.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!gabinete || !gabinete.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este gabinete' });
+        return;
+      }
+      res.status(200).json(gabinete.descarte);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

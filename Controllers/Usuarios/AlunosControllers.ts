@@ -10,6 +10,23 @@ export class AlunoController {
     try {
       const { name, email, password, matricula, curso, dias, bolsista, bolsistaTipo, cargo } = request.body;
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Verifica se a matrícula já existe
+      const existingAluno = await prisma.aluno.findUnique({
+        where: { matricula },
+      });
+      if (existingAluno) {
+        response.status(400).json({ message: "Matrícula já existe" });
+        return;
+      }
+      // Verifica se o email já existe
+      const existingEmail = await prisma.aluno.findUnique({
+        where: { email },
+      });
+      if (existingEmail) {
+        response.status(400).json({ message: "Email já existe" });
+        return;
+      }
       const aluno = await prisma.aluno.create({
         data: {
           name,
@@ -17,12 +34,14 @@ export class AlunoController {
           password: hashedPassword,
           matricula,
           curso,
-          dias,
+          dias: "",
+          horario: "",
           bolsistaTipo,
           cargo,
         },
       });
       response.status(201).json(aluno);
+
     } catch (error) {
       next(error);
     }
@@ -61,6 +80,17 @@ export class AlunoController {
       next(error);
     }
   };
+  // Método para listar alunos
+  list = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const alunos = await prisma.aluno.findMany({
+        where: { deleted: false },
+      });
+      response.json(alunos);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   // Método para verificar matrícula e senha
   verifyCredentials = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
@@ -73,28 +103,62 @@ export class AlunoController {
         response.status(401).json({ message: "Invalid matricula or password" });
         return;
       }
-      response.json({ message: "Credentials verified", aluno });
+      response.json({ message: "Credentials verified", id: aluno.id });
     } catch (error) {
       next(error);
     }
   };
 
-  // Método para atualizar aluno
+  // Método para atualizar apenas a senha do aluno
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      const { name, email, password, curso, dias, bolsista, bolsistaTipo, cargo } = request.body;
-      const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+      const { password } = request.body;
+
+      const aluno = await prisma.aluno.findUnique({
+        where: { id: parseInt(id) },
+      });
+
+      if (!aluno) {
+        response.status(404).json({ message: "Aluno não encontrado" });
+        return;
+      }
+
+      if (!password) {
+        response.status(400).json({ message: "A senha é obrigatória para atualização." });
+        return;
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const updatedAluno = await prisma.aluno.update({
+        where: { id: parseInt(id) },
+        data: { password: hashedPassword },
+      });
+
+      // Remove a senha do objeto retornado
+      const { password: _, ...alunoSemSenha } = updatedAluno;
+
+      response.json({ 
+        message: "Senha atualizada com sucesso", 
+        aluno: alunoSemSenha 
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //metodo para atualizar dias, horario e cargo
+  updateCargo = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = request.params;
+      const { dias, horario, cargo } = request.body;
 
       const aluno = await prisma.aluno.update({
         where: { id: parseInt(id) },
         data: {
-          name,
-          email,
-          password: hashedPassword,
-          curso,
           dias,
-          bolsistaTipo,
+          horario,
           cargo,
         },
       });
@@ -116,6 +180,35 @@ export class AlunoController {
         },
       });
       response.status(200).json({ message: "Aluno deleted successfully", aluno });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Método para verificar se o aluno existe (esqueci minha senha)
+  forgotPassword = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { matricula } = request.body;
+      
+      if (!matricula) {
+        response.status(400).json({ message: "Matrícula é obrigatória" });
+        return;
+      }
+
+      const aluno = await prisma.aluno.findUnique({
+        where: { matricula },
+      });
+
+      if (!aluno) {
+        response.status(404).json({ message: "Aluno não encontrado" });
+        return;
+      }
+
+      response.status(200).json({ 
+        message: "Aluno encontrado",
+        id: aluno.id,
+        email: aluno.email 
+      });
     } catch (error) {
       next(error);
     }

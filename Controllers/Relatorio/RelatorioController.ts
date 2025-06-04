@@ -32,6 +32,22 @@ export class RelatorioController {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+  
+  //metodo para obter todos os relatórios de um usuário específico
+  async getByUserId(req: Request, res: Response): Promise<void> {
+    try {
+      const { usuarioId } = req.params;
+      const relatorios = await prisma.relatorio.findMany({
+        where: {
+          usuarioId: Number(usuarioId),
+          deleted: false, // Excluir relatórios marcados como deletados
+        },
+      });
+      res.status(200).json(relatorios);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 
   // Criar um novo relatório
   async create(req: Request, res: Response): Promise<void> {
@@ -43,7 +59,6 @@ export class RelatorioController {
         atividades,
         objetivos,
         desafios,
-        proximosPassos,
         feedback,
         usuarioId,
       } = req.body;
@@ -56,8 +71,7 @@ export class RelatorioController {
           atividades,
           objetivos,
           desafios,
-          proximosPassos,
-          feedback,
+          feedback: feedback ?? null, // Permitir que feedback seja null
           usuarioId,
         },
       });
@@ -68,32 +82,15 @@ export class RelatorioController {
     }
   }
 
-  // Atualizar um relatório existente
+  // Atualizar apenas o feedback e aprovado de um relatório existente
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        name,
-        resumo,
-        periodo,
-        atividades,
-        objetivos,
-        desafios,
-        proximosPassos,
-        feedback,
-        aprovado,
-      } = req.body;
+      const { feedback, aprovado } = req.body;
 
       const updatedRelatorio = await prisma.relatorio.update({
         where: { id: Number(id) },
         data: {
-          name,
-          resumo,
-          periodo,
-          atividades,
-          objetivos,
-          desafios,
-          proximosPassos,
           feedback,
           aprovado,
         },

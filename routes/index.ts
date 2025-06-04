@@ -22,6 +22,8 @@ import MissaoController from "../Controllers/Missao/MissaoController";
 import ImagemController from "../Controllers/Imagem/ImagemController";
 import DataController from "../Controllers/Data/DataController";
 import RelatorioController from "../Controllers/Relatorio/RelatorioController";
+import MouseController from "../Controllers/Eletronicos/MouseController";
+
 import upload from "../middlewares/upload";
 
 
@@ -49,28 +51,35 @@ const imagemController = new ImagemController();
 const dataController = new DataController();
 const relatorioController = new RelatorioController();
 const missaoController = new MissaoController();
+const mouseController = new MouseController();
 
 // Coordenador routes
-router.post("/coordenadores", coordenadorController.create);
+
 router.get("/coordenadores", coordenadorController.getAll);
 router.get("/coordenadores/:id", coordenadorController.getById);
+router.post("/coordenadores/forgot-password", coordenadorController.forgotPassword);
+router.post("/coordenadores", coordenadorController.create);
 router.post("/coordenadores/verify", (req, res) => coordenadorController.verifyEmailAndPassword(req, res));
-router.put("/coordenadores/:email", coordenadorController.update);
+router.put("/coordenadores/:id", coordenadorController.updatePassword);
 router.delete("/coordenadores/:id", coordenadorController.delete);
 
 
 // Aluno routes
-router.post("/alunos", alunoController.create);
+router.get("/alunos", alunoController.list);
 router.get("/alunos/:id", alunoController.read);
 router.get('/alunos/matricula/:matricula', alunoController.getByMatricula);
+router.post("/alunos/forgot-password", alunoController.forgotPassword);
+router.post("/alunos", alunoController.create);
 router.post("/alunos/verify", alunoController.verifyCredentials);
-router.put("/alunos/:email", alunoController.update);
+router.put("/alunos/:id", alunoController.updateCargo);
+router.put("/alunos/senha/:id", alunoController.update);
 router.delete("/alunos/:id", alunoController.delete);
 
 
 // Missão routes
 router.post("/missoes", missaoController.create);
 router.get("/missoes", missaoController.getAll);
+router.get("/missoes/usuario/:usuarioId", missaoController.getByUserId);
 router.get("/missoes/:id", missaoController.getById);
 router.put("/missoes/:id", missaoController.update);
 router.delete("/missoes/:id", missaoController.delete);
@@ -79,18 +88,30 @@ router.delete("/missoes/:id", missaoController.delete);
 
 // Pessoa Fisica routes
 router.post("/pessoasFisicas", pessoaFisicaController.create);
-router.get("/pessoasFisicas/names", pessoaFisicaController.getAllByName); // Rota específica antes
-router.get('/pessoaFisicas/email/:email', pessoaFisicaController.getByEmail);
-router.get("/pessoasFisicas/verify/:email/:password", pessoaFisicaController.verifyCredentials);
-router.get("/pessoasFisicas/:id", pessoaFisicaController.read); // Rota dinâmica depois
-router.put("/pessoaFisicas/:id", pessoaFisicaController.update);
+router.get("/pessoasFisicas", pessoaFisicaController.getAll);
+router.get("/pessoasFisicas/names", pessoaFisicaController.getAllByName);
+router.post("/pessoaFisicas/forgot-password", pessoaFisicaController.forgotPassword);
+router.post("/pessoasFisicas/verify", pessoaFisicaController.verifyCredentials);
+router.get("/pessoasFisicas/:id", pessoaFisicaController.read);
+router.put("/pessoaFisicas/:id", upload.single("comprovanteDeBaixaRenda"), pessoaFisicaController.update);
 router.delete("/pessoasFisicas/:id", pessoaFisicaController.delete);
 
 //imagem routes
-router.post("/imagens", upload.single("file"), (req, res) =>
-    imagemController.create(req, res)
-  );
+router.post("/imagens", upload.single("image"), (req, res) =>
+  imagemController.create(req, res)
+);
 router.get("/imagens", imagemController.getAll);
+router.get("/imagens/mouse/:id", imagemController.getByMouseId);
+router.get("/imagens/estabilizado/:id", imagemController.getByEstabilizadorId);
+router.get("/imagens/monitor/:id", imagemController.getByMonitorId);
+router.get("/imagens/placaMae/:id", imagemController.getByPlacaMaeId);
+router.get("/imagens/hd/:id", imagemController.getByHdId);
+router.get("/imagens/notebook/:id", imagemController.getByNotebookId);
+router.get("/imagens/impressora/:id", imagemController.getByImpressoraId);
+router.get("/imagens/gabinete/:id", imagemController.getByGabineteId);
+router.get("/imagens/fonteDeAlimentacao/:id", imagemController.getByFonteDeAlimentacaoId);
+router.get("/imagens/teclado/:id", imagemController.getByTecladoId);
+router.get("/imagens/processador/:id", imagemController.getByProcessadorId);
 router.get("/imagens/:id", imagemController.getById);
 router.put("/imagens/:id", imagemController.update);
 router.delete("/imagens/:id", imagemController.delete);
@@ -105,6 +126,7 @@ router.delete("/datas/:id", dataController.delete);
 // Relatorio routes
 router.post("/relatorios", relatorioController.create);
 router.get("/relatorios", relatorioController.getAll);
+router.get("/relatorios/usuario/:usuarioId", relatorioController.getByUserId);
 router.get("/relatorios/:id", relatorioController.getById);
 router.put("/relatorios/:id", relatorioController.update);
 router.delete("/relatorios/:id", relatorioController.delete);
@@ -112,11 +134,13 @@ router.delete("/relatorios/:id", relatorioController.delete);
 
 // Pessoa Juridica routes
 router.post("/pessoasJuridicas", pessoaJuridicaController.create);
-router.get("/pessoasJuridicas/names", pessoaJuridicaController.getAllByName); // Rota específica antes
+router.get("/pessoasJuridicas", pessoaJuridicaController.getAll);
+router.get("/pessoasJuridicas/names", pessoaJuridicaController.getAllByName);
 router.get("/pessoasJuridicas/:id", pessoaJuridicaController.read);
 router.get('/pessoaJuridicas/email/:email', pessoaJuridicaController.getByEmail);
-router.get("/pessoasJuridicas/verify/:email/:password", pessoaJuridicaController.verifyCredentials);
-router.put("/pessoasJuridicas/:email", pessoaJuridicaController.update);
+router.post("/pessoasJuridicas/forgot-password", pessoaJuridicaController.forgotPassword);
+router.post("/pessoasJuridicas/verify", pessoaJuridicaController.verifyCredentials);
+router.put("/pessoasJuridicas/:id", pessoaJuridicaController.update);
 router.delete("/pessoasJuridicas/:id", pessoaJuridicaController.delete);
 
 
@@ -126,7 +150,7 @@ router.delete("/pessoasJuridicas/:id", pessoaJuridicaController.delete);
 router.get('/inscritos', inscritosController.getAll);
 router.get('/inscritos/:id', inscritosController.getById);
 router.post('/inscritos', inscritosController.create);
-router.put('/inscritos/:id', inscritosController.update);
+router.put('/inscritos/:id', inscritosController.updateStatus);
 router.delete('/inscritos/:id', inscritosController.delete);
 
 
@@ -200,20 +224,54 @@ router.get("/teclados/:id", tecladoController.getById);
 router.put("/teclados/:id", tecladoController.update);
 
 
+// Mouse routes
+router.get("/mouses", mouseController.getAll);
+router.get("/mouses/:id", mouseController.getById);
+router.post("/mouses", mouseController.create);
+router.put("/mouses/:id", mouseController.update);
+router.delete("/mouses/:id", mouseController.delete);
+router.get("/mouses/:id/descarte", mouseController.getDescarte);
+router.get("/imagens/mouse/:id", imagemController.getByMouseId);
+
+
+
 // Descarte routes
 router.post("/descartes", descarteController.create);
+router.get("/descartes", descarteController.list);
 router.get("/descartes/:id", descarteController.read);
 router.put("/descartes/:id", descarteController.update);
 router.delete("/descartes/:id", descarteController.delete);
+router.get("/descartes/:id/teclados", descarteController.getTeclados);
+router.get("/descartes/:id/hds", descarteController.getHds);
+router.get("/descartes/:id/estabilizadores", descarteController.getEstabilizadores);
+router.get("/descartes/:id/monitores", descarteController.getMonitores);
+router.get("/descartes/:id/mouses", descarteController.getMouses);
+router.get("/descartes/:id/gabinetes", descarteController.getGabinetes);
+router.get("/descartes/:id/impressoras", descarteController.getImpressoras);
+router.get("/descartes/:id/placasMae", descarteController.getPlacasMae);
+router.get("/descartes/:id/notebooks", descarteController.getNotebooks);
+router.get("/descartes/:id/processadores", descarteController.getProcessadores);
 
 
 // Doacao routes
 router.post("/doacoes", doacaoController.create);
+router.get("/doacoes", doacaoController.readAll);
 router.get("/doacoes/:id", doacaoController.read);
 router.put("/doacoes/:id", doacaoController.update);
 router.delete("/doacoes/:id", doacaoController.delete);
-router.get('/doacoes', doacaoController.readAll);
 
+// Rotas para obter eletrônicos de uma doação
+router.get("/doacoes/:id/teclados", doacaoController.getTeclados);
+router.get("/doacoes/:id/hds", doacaoController.getHds);
+router.get("/doacoes/:id/estabilizadores", doacaoController.getEstabilizadores);
+router.get("/doacoes/:id/monitores", doacaoController.getMonitores);
+router.get("/doacoes/:id/mouses", doacaoController.getMouses);
+router.get("/doacoes/:id/gabinetes", doacaoController.getGabinetes);
+router.get("/doacoes/:id/impressoras", doacaoController.getImpressoras);
+router.get("/doacoes/:id/placas-mae", doacaoController.getPlacasMae);
+router.get("/doacoes/:id/notebooks", doacaoController.getNotebooks);
+router.get("/doacoes/:id/processadores", doacaoController.getProcessadores);
+router.get("/doacoes/:id/fontes", doacaoController.getFontesDeAlimentacao);
 
 // DoacaoUsuario routes
 router.post("/doacoesUsuarios", doacaoUsuarioController.create);
@@ -227,11 +285,12 @@ router.get("/doacoesUsuarios", doacaoUsuarioController.readAll);
 
 // Rotas para SolicitacaoController
 router.post("/solicitacoes", solicitacaoController.create);
+router.get("/solicitacoes", solicitacaoController.readAll);
 router.get("/solicitacoes/:id", solicitacaoController.read);
 router.put("/solicitacoes/:id", solicitacaoController.update);
 router.delete("/solicitacoes/:id", solicitacaoController.delete);
 router.get('/solicitacoes/:userId/:userType', solicitacaoController.getSolicitacoes);
-router.get("/solicitacoes", solicitacaoController.readAll);
+
 
 
 export { router };

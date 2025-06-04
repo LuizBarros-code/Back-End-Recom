@@ -40,7 +40,6 @@ export class FonteDeAlimentacaoController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
         potencia,
         alunoid,
@@ -48,11 +47,6 @@ export class FonteDeAlimentacaoController {
         descarteId,
         doacaoId
       } = req.body;
-
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !potencia) {
-        res.status(400).json({ error: 'Missing required fields' });
-        return;
-      }
 
       const newFonteDeAlimentacao = await prisma.fontedealimentacao.create({
         data: {
@@ -64,7 +58,6 @@ export class FonteDeAlimentacaoController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
           potencia,
           alunoid,
@@ -82,48 +75,25 @@ export class FonteDeAlimentacaoController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        potencia,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !potencia) {
-        res.status(400).json({ error: 'Missing required fields' });
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
         return;
       }
 
+      // Buscar o registro atual para preencher o campo não enviado
+      const fonteAtual = await prisma.fontedealimentacao.findUnique({ where: { id: Number(id) } });
+      if (!fonteAtual) {
+        res.status(404).json({ error: 'Fonte de Alimentação not found' });
+        return;
+      }
+      if (status === undefined) status = fonteAtual.status;
+      if (situacao === undefined) situacao = fonteAtual.situacao;
+
       const updatedFonteDeAlimentacao = await prisma.fontedealimentacao.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          potencia,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
       res.status(200).json(updatedFonteDeAlimentacao);
     } catch (error) {

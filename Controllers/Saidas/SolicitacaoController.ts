@@ -7,22 +7,24 @@ export class SolicitacaoController {
   // Método para criar solicitação
   create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { name, eletronicos, descricao, contato, data, status, usuario, usuariosolicitacaofisico, donatariojuridico, horarioparapegar, informacoes } = request.body;
+      const { name, eletronicos, descricao, contato, dataparapegar, status, usuario, usuariosolicitacaofisico, donatariojuridico, horarioparapegar, informacoes } = request.body;
+      const dataToCreate: any = {
+        name,
+        eletronicos,
+        descricao,
+        informacoes,
+        horarioparapegar: horarioparapegar || null,
+        contato,
+        status,
+        usuario: usuario ? { connect: { id: Number(usuario) } } : undefined,
+        usuariosolicitacaofisico: usuariosolicitacaofisico ? { connect: { id: Number(usuariosolicitacaofisico) } } : undefined,
+        donatariojuridico: donatariojuridico ? { connect: { id: Number(donatariojuridico) } } : undefined,
+      };
+      if (dataparapegar) {
+        dataToCreate.dataparapegar = new Date(dataparapegar);
+      }
       const solicitacao = await prisma.solicitacao.create({
-        data: {
-          name,
-          eletronicos,
-          descricao,
-          informacoes ,
-          horarioparapegar,
-          contato,
-          data: new Date(data),
-          status,
-          dataparapegar: new Date(),
-          usuario,
-          usuariosolicitacaofisico,
-          donatariojuridico 
-        },
+        data: dataToCreate,
       });
       response.status(201).json(solicitacao);
     } catch (error) {
@@ -75,14 +77,17 @@ export class SolicitacaoController {
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      const { informacoes, horarioparapegar, dataparapegar } = request.body;
+      const { status, horarioparapegar, dataparapegar } = request.body;
+      const dataToUpdate: any = {
+        status,
+        horarioparapegar,
+      };
+      if (dataparapegar) {
+        dataToUpdate.dataparapegar = new Date(dataparapegar);
+      }
       const solicitacao = await prisma.solicitacao.update({
         where: { id: parseInt(id) },
-        data: {
-          informacoes: informacoes,
-          horarioparapegar,
-          dataparapegar: new Date(dataparapegar),
-        },
+        data: dataToUpdate,
       });
       response.json(solicitacao);
     } catch (error) {

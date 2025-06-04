@@ -3,11 +3,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export class EstabilizadorController {
+export default class MouseController {
   async getAll(req: Request, res: Response): Promise<void> {
     try {
-      const estabilizadores = await prisma.estabilizador.findMany();
-      res.status(200).json(estabilizadores);
+      const mouses = await prisma.mouse.findMany();
+      res.status(200).json(mouses);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -16,20 +16,20 @@ export class EstabilizadorController {
   async getById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const estabilizador = await prisma.estabilizador.findUnique({
+      const mouse = await prisma.mouse.findUnique({
         where: { id: Number(id) },
       });
-      if (estabilizador) {
-        res.status(200).json(estabilizador);
+      if (mouse) {
+        res.status(200).json(mouse);
       } else {
-        res.status(404).json({ error: 'Estabilizador not found' });
+        res.status(404).json({ error: 'Mouse not found' });
       }
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  async create(req: Request, res: Response): Promise<Response | void> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const {
         codigoDereferencia,
@@ -40,20 +40,20 @@ export class EstabilizadorController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
-        potencia,
+        tipoDeConexao,
         alunoid,
         modificadorid,
         descarteId,
         doacaoId
       } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !potencia) {
-        return res.status(400).json({ error: 'Missing required fields' });
+      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !situacao || !tipoDeConexao) {
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
       }
 
-      const newEstabilizador = await prisma.estabilizador.create({
+      const newMouse = await prisma.mouse.create({
         data: {
           codigoDereferencia,
           descricao,
@@ -63,67 +63,44 @@ export class EstabilizadorController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
-          potencia,
+          tipoDeConexao,
           alunoid,
           modificadorid,
           descarteId,
           doacaoId
         },
       });
-      res.status(201).json(newEstabilizador);
+      res.status(201).json(newMouse);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
 
-  async update(req: Request, res: Response): Promise<Response | void> {
+  async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        potencia,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !potencia) {
-        return res.status(400).json({ error: 'Missing required fields' });
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
+        return;
       }
 
-      const updatedEstabilizador = await prisma.estabilizador.update({
+      // Buscar o registro atual para preencher o campo não enviado
+      const mouseAtual = await prisma.mouse.findUnique({ where: { id: Number(id) } });
+      if (!mouseAtual) {
+        res.status(404).json({ error: 'Mouse not found' });
+        return;
+      }
+      if (status === undefined) status = mouseAtual.status;
+      if (situacao === undefined) situacao = mouseAtual.situacao;
+
+      const updatedMouse = await prisma.mouse.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          potencia,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
-      res.status(200).json(updatedEstabilizador);
+      res.status(200).json(updatedMouse);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -132,7 +109,7 @@ export class EstabilizadorController {
   async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      await prisma.estabilizador.delete({
+      await prisma.mouse.delete({
         where: { id: Number(id) },
       });
       res.status(204).send();
@@ -140,6 +117,21 @@ export class EstabilizadorController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
-}
 
-export default EstabilizadorController;
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const mouse = await prisma.mouse.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!mouse || !mouse.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este mouse' });
+        return;
+      }
+      res.status(200).json(mouse.descarte);
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}

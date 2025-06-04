@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class DoacaoController {
+
   // Método para criar doação
   create = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
@@ -161,6 +162,83 @@ export class DoacaoController {
       next(error);
     }
   };
+
+  // Retorna todos os teclados de uma doação
+  async getTeclados(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const teclados = await prisma.teclado.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(teclados);
+  }
+
+  // Retorna todos os hds de uma doação
+  async getHds(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const hds = await prisma.hd.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(hds);
+  }
+
+  // Retorna todos os estabilizadores de uma doação
+  async getEstabilizadores(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const estabilizadores = await prisma.estabilizador.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(estabilizadores);
+  }
+
+  // Retorna todos os monitores de uma doação
+  async getMonitores(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const monitores = await prisma.monitor.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(monitores);
+  }
+
+  // Retorna todos os mouses de uma doação
+  async getMouses(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const mouses = await prisma.mouse.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(mouses);
+  }
+
+  // Retorna todos os gabinetes de uma doação
+  async getGabinetes(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const gabinetes = await prisma.gabinete.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(gabinetes);
+  }
+
+  // Retorna todas as impressoras de uma doação
+  async getImpressoras(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const impressoras = await prisma.impressora.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(impressoras);
+  }
+
+  // Retorna todas as placas mãe de uma doação
+  async getPlacasMae(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const placasMae = await prisma.placamae.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(placasMae);
+  }
+
+  // Retorna todos os notebooks de uma doação
+  async getNotebooks(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const notebooks = await prisma.notebook.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(notebooks);
+  }
+
+  // Retorna todos os processadores de uma doação
+  async getProcessadores(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const processadores = await prisma.processador.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(processadores);
+  }
+
+  // Retorna todas as fontes de alimentação de uma doação
+  async getFontesDeAlimentacao(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const fontes = await prisma.fontedealimentacao.findMany({ where: { doacaoId: Number(id) } });
+    res.status(200).json(fontes);
+  }
 }
 
 export default DoacaoController;

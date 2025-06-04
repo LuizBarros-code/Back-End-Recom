@@ -25,7 +25,7 @@ export class PessoaJuridicaController {
 
       const pessoaJuridica = await prisma.pessoajuridica.create({
         data: {
-          tipo: "juridica",
+          tipo: "juridico",
           name,
           cnpj,
           email,
@@ -37,6 +37,19 @@ export class PessoaJuridicaController {
       });
 
       response.status(201).json(pessoaJuridica);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Método para listar todas as pessoas jurídicas
+  getAll = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const pessoasJuridicas = await prisma.pessoajuridica.findMany({
+        where: { deleted: false },
+      });
+
+      response.status(200).json(pessoasJuridicas);
     } catch (error) {
       next(error);
     }
@@ -64,18 +77,33 @@ export class PessoaJuridicaController {
   // Método para verificar credenciais
   verifyCredentials = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password } = request.body; // Extraindo do corpo da requisição
-      const pessoaJuridica = await prisma.pessoajuridica.findUnique({
-        where: { email },
-      });
+      const { cnpj, password } = request.body;
 
-      if (!pessoaJuridica || !(await bcrypt.compare(password, pessoaJuridica.password))) {
-        response.status(401).json({ message: "Email ou senha inválidos" });
+      // Verificar se o CNPJ e a senha foram fornecidos
+      if (!cnpj || !password) {
+        response.status(400).json({ message: "CNPJ e senha são obrigatórios" });
         return;
       }
 
-      response.json({ message: "Credenciais verificadas", pessoaJuridica });
+      // Buscar pessoa jurídica pelo CNPJ
+      const pessoaJuridica = await prisma.pessoajuridica.findUnique({
+        where: { cnpj },
+      });
+
+      // Verificar se a pessoa jurídica existe e se a senha está correta
+      if (!pessoaJuridica || !(await bcrypt.compare(password, pessoaJuridica.password))) {
+        response.status(401).json({ message: "CNPJ ou senha inválidos" });
+        return;
+      }
+
+      // Retornar sucesso sem a senha
+      const { password: _, ...pessoaJuridicaSemSenha } = pessoaJuridica;
+      response.json({ 
+        message: "Credenciais verificadas com sucesso", 
+        pessoaJuridica: pessoaJuridicaSemSenha 
+      });
     } catch (error) {
+      console.error("Erro ao verificar credenciais:", error);
       next(error);
     }
   };
@@ -119,18 +147,19 @@ export class PessoaJuridicaController {
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      const { name, email, password, comprovanteDeProjeto, telefone, endereco } = request.body;
+      const { password, comprovanteDeProjeto } = request.body;
 
       const dataToUpdate: any = {};
-      if (name) dataToUpdate.name = name;
-      if (email) dataToUpdate.email = email;
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
         dataToUpdate.password = hashedPassword;
       }
       if (comprovanteDeProjeto) dataToUpdate.comprovanteDeProjeto = comprovanteDeProjeto;
-      if (telefone) dataToUpdate.telefone = telefone;
-      if (endereco) dataToUpdate.endereco = endereco;
+
+      if (Object.keys(dataToUpdate).length === 0) {
+        response.status(400).json({ message: "É necessário informar a nova senha ou o comprovante de projeto para atualizar." });
+        return;
+      }
 
       const updatedPessoaJuridica = await prisma.pessoajuridica.update({
         where: { id: parseInt(id) },
@@ -158,6 +187,35 @@ export class PessoaJuridicaController {
       });
 
       response.status(200).json({ message: "Pessoa Jurídica deletada com sucesso", deletedPessoaJuridica });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Método para verificar se a pessoa jurídica existe (esqueci minha senha)
+  forgotPassword = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { cnpj } = request.body;
+      
+      if (!cnpj) {
+        response.status(400).json({ message: "CNPJ é obrigatório" });
+        return;
+      }
+
+      const pessoaJuridica = await prisma.pessoajuridica.findUnique({
+        where: { cnpj },
+      });
+
+      if (!pessoaJuridica) {
+        response.status(404).json({ message: "Pessoa Jurídica não encontrada" });
+        return;
+      }
+
+      response.status(200).json({ 
+        message: "Pessoa Jurídica encontrada",
+        id: pessoaJuridica.id,
+        email: pessoaJuridica.email 
+      });
     } catch (error) {
       next(error);
     }

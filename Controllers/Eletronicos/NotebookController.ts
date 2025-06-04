@@ -40,7 +40,6 @@ export class NotebookController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
         alunoid,
         modificadorid,
@@ -48,7 +47,7 @@ export class NotebookController {
         doacaoId
       } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
+      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !situacao) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
       }
@@ -63,7 +62,6 @@ export class NotebookController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
           alunoid,
           modificadorid,
@@ -80,46 +78,25 @@ export class NotebookController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
-        res.status(400).json({ error: 'Missing required fields' });
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
         return;
       }
 
+      // Buscar o registro atual para preencher o campo não enviado
+      const notebookAtual = await prisma.notebook.findUnique({ where: { id: Number(id) } });
+      if (!notebookAtual) {
+        res.status(404).json({ error: 'Notebook not found' });
+        return;
+      }
+      if (status === undefined) status = notebookAtual.status;
+      if (situacao === undefined) situacao = notebookAtual.situacao;
+
       const updatedNotebook = await prisma.notebook.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
       res.status(200).json(updatedNotebook);
     } catch (error) {
@@ -134,6 +111,23 @@ export class NotebookController {
         where: { id: Number(id) },
       });
       res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const notebook = await prisma.notebook.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!notebook || !notebook.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este notebook' });
+        return;
+      }
+      res.status(200).json(notebook.descarte);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

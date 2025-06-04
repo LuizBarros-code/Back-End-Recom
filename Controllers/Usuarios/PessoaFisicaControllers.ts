@@ -25,7 +25,7 @@ export class PessoaFisicaController {
 
       const pessoaFisica = await prisma.pessoafisica.create({
         data: {
-          tipo: "fisica",
+          tipo: "fisico",
           name,
           cpf,
           email,
@@ -36,6 +36,19 @@ export class PessoaFisicaController {
       });
 
       response.status(201).json(pessoaFisica);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Método para listar todas as pessoas físicas
+  getAll = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const pessoasFisicas = await prisma.pessoafisica.findMany({
+        where: { deleted: false },
+      });
+
+      response.status(200).json(pessoasFisicas);
     } catch (error) {
       next(error);
     }
@@ -60,21 +73,36 @@ export class PessoaFisicaController {
     }
   };
 
-  // Método para verificar credenciais
+  // Método para verificar credenciais usando CPF
   verifyCredentials = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password } = request.body; // Extraindo do corpo da requisição
-      const pessoaFisica = await prisma.pessoafisica.findUnique({
-        where: { email },
-      });
+      const { cpf, password } = request.body;
 
-      if (!pessoaFisica || !(await bcrypt.compare(password, pessoaFisica.password))) {
-        response.status(401).json({ message: "Email ou senha inválidos" });
+      // Verificar se o CPF e a senha foram fornecidos
+      if (!cpf || !password) {
+        response.status(400).json({ message: "CPF e senha são obrigatórios" });
         return;
       }
 
-      response.json({ message: "Credenciais verificadas", pessoaFisica });
+      // Buscar pessoa física pelo CPF
+      const pessoaFisica = await prisma.pessoafisica.findUnique({
+        where: { cpf },
+      });
+
+      // Verificar se a pessoa física existe e se a senha está correta
+      if (!pessoaFisica || !(await bcrypt.compare(password, pessoaFisica.password))) {
+        response.status(401).json({ message: "CPF ou senha inválidos" });
+        return;
+      }
+
+      // Retornar sucesso sem a senha
+      const { password: _, ...pessoaFisicaSemSenha } = pessoaFisica;
+      response.json({ 
+        message: "Credenciais verificadas com sucesso", 
+        pessoaFisica: pessoaFisicaSemSenha 
+      });
     } catch (error) {
+      console.error("Erro ao verificar credenciais:", error);
       next(error);
     }
   };
@@ -115,7 +143,7 @@ export class PessoaFisicaController {
   update = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = request.params;
-      const { name, email, password, comprovanteDeBaixaRenda, telefone } = request.body;
+      const { name, email, password, telefone } = request.body;
 
       // Buscar a pessoa física pelo ID
       const pessoaFisica = await prisma.pessoafisica.findUnique({
@@ -134,8 +162,22 @@ export class PessoaFisicaController {
         const hashedPassword = await bcrypt.hash(password, 10);
         dataToUpdate.password = hashedPassword;
       }
-      if (comprovanteDeBaixaRenda) dataToUpdate.comprovanteDeBaixaRenda = comprovanteDeBaixaRenda;
       if (telefone) dataToUpdate.telefone = telefone;
+
+      // Handle file upload if present
+      if (request.file) {
+        // Verifica se é um arquivo válido (PDF, imagem, etc)
+        const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+        if (!allowedMimeTypes.includes(request.file.mimetype)) {
+          response.status(400).json({ 
+            message: "Tipo de arquivo não permitido. Apenas PDF e imagens (JPEG, PNG) são aceitos." 
+          });
+          return;
+        }
+
+        const fileUrl = `/uploads/${request.file.filename}`;
+        dataToUpdate.comprovanteDeBaixaRenda = fileUrl;
+      }
 
       // Atualizar a pessoa física
       const updatedPessoaFisica = await prisma.pessoafisica.update({
@@ -143,7 +185,13 @@ export class PessoaFisicaController {
         data: dataToUpdate,
       });
 
-      response.status(200).json({ message: "Pessoa Física atualizada com sucesso", updatedPessoaFisica });
+      // Remove a senha do objeto retornado
+      const { password: _, ...pessoaFisicaSemSenha } = updatedPessoaFisica;
+
+      response.status(200).json({ 
+        message: "Pessoa Física atualizada com sucesso", 
+        pessoaFisica: pessoaFisicaSemSenha 
+      });
     } catch (error) {
       next(error);
     }
@@ -164,6 +212,35 @@ export class PessoaFisicaController {
       });
 
       response.status(200).json({ message: "Pessoa Física deletada com sucesso", deletedPessoaFisica });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Método para verificar se a pessoa física existe (esqueci minha senha)
+  forgotPassword = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { cpf } = request.body;
+      
+      if (!cpf) {
+        response.status(400).json({ message: "CPF é obrigatório" });
+        return;
+      }
+
+      const pessoaFisica = await prisma.pessoafisica.findUnique({
+        where: { cpf },
+      });
+
+      if (!pessoaFisica) {
+        response.status(404).json({ message: "Pessoa Física não encontrada" });
+        return;
+      }
+
+      response.status(200).json({ 
+        message: "Pessoa Física encontrada",
+        id: pessoaFisica.id,
+        email: pessoaFisica.email 
+      });
     } catch (error) {
       next(error);
     }

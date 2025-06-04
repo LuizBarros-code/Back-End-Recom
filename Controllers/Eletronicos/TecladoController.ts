@@ -40,7 +40,6 @@ class TecladoController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
         tipoDeConexao,
         usuarioId,
@@ -49,12 +48,7 @@ class TecladoController {
         doacaoId
       } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !tipoDeConexao) {
-        res.status(400).json({ error: 'Missing required fields' });
-        return;
-      }
-
-      const teclado = await prisma.teclado.create({
+      const newTeclado = await prisma.teclado.create({
         data: {
           codigoDereferencia,
           descricao,
@@ -64,7 +58,6 @@ class TecladoController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
           tipoDeConexao,
           usuarioId,
@@ -73,7 +66,7 @@ class TecladoController {
           doacaoId
         },
       });
-      res.status(201).json(teclado);
+      res.status(201).json(newTeclado);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -82,50 +75,27 @@ class TecladoController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        tipoDeConexao,
-        usuarioId,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
-
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao || !tipoDeConexao) {
-        res.status(400).json({ error: 'Missing required fields' });
+      let { status, situacao } = req.body;
+      
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
         return;
       }
 
-      const teclado = await prisma.teclado.update({
+      // Buscar o registro atual para preencher o campo não enviado
+      const tecladoAtual = await prisma.teclado.findUnique({ where: { id: Number(id) } });
+      if (!tecladoAtual) {
+        res.status(404).json({ error: 'Teclado not found' });
+        return;
+      }
+      if (status === undefined) status = tecladoAtual.status;
+      if (situacao === undefined) situacao = tecladoAtual.situacao;
+
+      const updatedTeclado = await prisma.teclado.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          tipoDeConexao,
-          usuarioId,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
-      res.status(200).json(teclado);
+      res.status(200).json(updatedTeclado);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -138,6 +108,23 @@ class TecladoController {
         where: { id: Number(id) },
       });
       res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const teclado = await prisma.teclado.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!teclado || !teclado.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este teclado' });
+        return;
+      }
+      res.status(200).json(teclado.descarte);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

@@ -87,26 +87,26 @@ export class CoordenadorController {
     }
   }
 
-  // Atualizar um coordenador existente
-  async update(req: Request, res: Response): Promise<void> {
+  // Atualizar a senha de um coordenador existente
+  async updatePassword(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { name, email, telefone, password } = req.body;
+      const { password } = req.body;
 
-      const dataToUpdate: any = { name, email, telefone };
-
-      // Hash da senha, se fornecida
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        dataToUpdate.password = hashedPassword;
+      if (!password) {
+        res.status(400).json({ error: "Password is required" });
+        return;
       }
+
+      // Hash da nova senha
+      const hashedPassword = await bcrypt.hash(password, 10);
 
       const updatedCoordenador = await prisma.coordenador.update({
         where: { id: Number(id) },
-        data: dataToUpdate,
+        data: { password: hashedPassword },
       });
 
-      res.status(200).json(updatedCoordenador);
+      res.status(200).json({ message: "Password updated successfully", updatedCoordenador });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }
@@ -126,6 +126,35 @@ export class CoordenadorController {
       });
 
       res.status(200).json({ message: "Coordenador deleted successfully", deletedCoordenador });
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  // Método para verificar se o coordenador existe (esqueci minha senha)
+  async forgotPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        res.status(400).json({ message: "Email é obrigatório" });
+        return;
+      }
+
+      const coordenador = await prisma.coordenador.findUnique({
+        where: { email },
+      });
+
+      if (!coordenador) {
+        res.status(404).json({ message: "Coordenador não encontrado" });
+        return;
+      }
+
+      res.status(200).json({ 
+        message: "Coordenador encontrado",
+        id: coordenador.id,
+        email: coordenador.email 
+      });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
     }

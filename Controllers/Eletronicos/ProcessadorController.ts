@@ -40,15 +40,15 @@ class ProcessadorController {
         marca,
         modelo,
         nome,
-        imagem,
         situacao,
+        potencia,
         alunoid,
         modificadorid,
         descarteId,
         doacaoId
       } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
+      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !situacao || !potencia) {
         res.status(400).json({ error: 'Missing required fields' });
         return;
       }
@@ -63,7 +63,6 @@ class ProcessadorController {
           marca,
           modelo,
           nome,
-          imagem,
           situacao,
           alunoid,
           modificadorid,
@@ -76,49 +75,28 @@ class ProcessadorController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
-
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        codigoDereferencia,
-        descricao,
-        status,
-        dataDeChegada,
-        dataDeSaida,
-        marca,
-        modelo,
-        nome,
-        imagem,
-        situacao,
-        alunoid,
-        modificadorid,
-        descarteId,
-        doacaoId
-      } = req.body;
+      let { status, situacao } = req.body;
 
-      if (!codigoDereferencia || !descricao || !status || !dataDeChegada || !marca || !modelo || !nome || !imagem || !situacao) {
-        res.status(400).json({ error: 'Missing required fields' });
+      if (status === undefined && situacao === undefined) {
+        res.status(400).json({ error: 'At least one field (status or situacao) must be provided' });
+        return;
       }
+
+      // Buscar o registro atual para preencher o campo não enviado
+      const processadorAtual = await prisma.processador.findUnique({ where: { id: Number(id) } });
+      if (!processadorAtual) {
+        res.status(404).json({ error: 'Processador not found' });
+        return;
+      }
+      if (status === undefined) status = processadorAtual.status;
+      if (situacao === undefined) situacao = processadorAtual.situacao;
 
       const updatedProcessador = await prisma.processador.update({
         where: { id: Number(id) },
-        data: {
-          codigoDereferencia,
-          descricao,
-          status,
-          dataDeChegada: new Date(dataDeChegada),
-          dataDeSaida: dataDeSaida ? new Date(dataDeSaida) : null,
-          marca,
-          modelo,
-          nome,
-          imagem,
-          situacao,
-          alunoid,
-          modificadorid,
-          descarteId,
-          doacaoId
-        },
+        data: { status, situacao },
       });
       res.status(200).json(updatedProcessador);
     } catch (error) {
@@ -133,6 +111,23 @@ class ProcessadorController {
         where: { id: Number(id) },
       });
       res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async getDescarte(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const processador = await prisma.processador.findUnique({
+        where: { id: Number(id) },
+        include: { descarte: true }
+      });
+      if (!processador || !processador.descarte) {
+        res.status(404).json({ error: 'Descarte não encontrado para este processador' });
+        return;
+      }
+      res.status(200).json(processador.descarte);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
     }

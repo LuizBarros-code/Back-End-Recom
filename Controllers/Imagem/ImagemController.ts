@@ -74,62 +74,276 @@ export class ImagemController {
     }
   }
 
-  // Criar uma nova imagem
-  create(req: Request, res: Response): void {
-    upload(req, res, async (err: any) => {
-      if (err instanceof multer.MulterError) {
-        // Erro relacionado ao multer
-        return res.status(500).json({ error: "File upload error" });
-      } else if (err) {
-        // Outro tipo de erro
-        return res.status(500).json({ error: "Internal server error" });
+  //metodo para puxar imagem de um estabilizador
+  async getByEstabilizadorId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { estabilizadorId: Number(id), deleted: false },
+        include: {
+          estabilizador: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
       }
-
-      // Verificar se o arquivo foi enviado
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-
-      try {
-        const {
-          tecladoId,
-          hdId,
-          fontedealimentacaoId,
-          gabineteId,
-          monitorId,
-          mouseId,
-          estabilizadorId,
-          impressoraId,
-          placamaeId,
-          notebookId,
-          processadorId,
-        } = req.body;
-
-        const fileUrl = `/uploads/${req.file.filename}`; // Caminho relativo do arquivo
-
-        const newImagem = await prisma.imagem.create({
-          data: {
-            url: fileUrl,
-            tecladoId: tecladoId ? Number(tecladoId) : null,
-            hdId: hdId ? Number(hdId) : null,
-            fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
-            gabineteId: gabineteId ? Number(gabineteId) : null,
-            monitorId: monitorId ? Number(monitorId) : null,
-            mouseId: mouseId ? Number(mouseId) : null,
-            estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
-            impressoraId: impressoraId ? Number(impressoraId) : null,
-            placamaeId: placamaeId ? Number(placamaeId) : null,
-            notebookId: notebookId ? Number(notebookId) : null,
-            processadorId: processadorId ? Number(processadorId) : null,
-          },
-        });
-
-        res.status(201).json(newImagem);
-      } catch (error) {
-        res.status(500).json({ error: "Internal server error" });
-      }
-    });
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
+
+  //metodo para puxar imagem de um impressora
+  async getByImpressoraId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { impressoraId: Number(id), deleted: false },
+        include: {
+          impressora: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um notebook
+  async getByNotebookId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { notebookId: Number(id), deleted: false },
+        include: {
+          notebook: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um processador
+  async getByProcessadorId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { processadorId: Number(id), deleted: false },
+        include: {
+          processador: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um teclado
+  async getByTecladoId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { tecladoId: Number(id), deleted: false },
+        include: {
+          teclado: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um gabinete
+  async getByGabineteId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { gabineteId: Number(id), deleted: false },
+        include: {
+          gabinete: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um hd
+  async getByHdId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { hdId: Number(id), deleted: false },
+        include: {
+          hd: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um monitor
+  async getByMonitorId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { monitorId: Number(id), deleted: false },
+        include: {
+          monitor: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de um mouse
+  async getByMouseId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { mouseId: Number(id), deleted: false },
+        include: {
+          mouse: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de uma placa mae
+  async getByPlacaMaeId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { placamaeId: Number(id), deleted: false },
+        include: {
+          placamae: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  //metodo para puxar imagem de uma fonte de alimentacao
+  async getByFonteDeAlimentacaoId(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const imagem = await prisma.imagem.findMany({
+        where: { fontedealimentacaoId: Number(id), deleted: false },
+        include: {
+          fontedealimentacao: true,
+        },
+      });
+      if (imagem) {
+        res.status(200).json(imagem);
+      } else {
+        res.status(404).json({ error: "Imagem not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+
+  // Criar uma nova imagem
+async create(req: Request, res: Response): Promise<void> {
+  try {
+    console.log("Arquivo recebido:", req.file);
+
+    if (!req.file) {
+      res.status(400).json({ error: "Nenhum arquivo enviado" });
+      return;
+    }
+
+    const {
+      tecladoId,
+      hdId,
+      fontedealimentacaoId,
+      gabineteId,
+      monitorId,
+      mouseId,
+      estabilizadorId,
+      impressoraId,
+      placamaeId,
+      notebookId,
+      processadorId,
+    } = req.body;
+
+    const fileUrl = `/uploads/${req.file.filename}`; // Caminho relativo do arquivo
+
+    const newImagem = await prisma.imagem.create({
+      data: {
+        url: fileUrl,
+        tecladoId: tecladoId ? Number(tecladoId) : null,
+        hdId: hdId ? Number(hdId) : null,
+        fontedealimentacaoId: fontedealimentacaoId ? Number(fontedealimentacaoId) : null,
+        gabineteId: gabineteId ? Number(gabineteId) : null,
+        monitorId: monitorId ? Number(monitorId) : null,
+        mouseId: mouseId ? Number(mouseId) : null,
+        estabilizadorId: estabilizadorId ? Number(estabilizadorId) : null,
+        impressoraId: impressoraId ? Number(impressoraId) : null,
+        placamaeId: placamaeId ? Number(placamaeId) : null,
+        notebookId: notebookId ? Number(notebookId) : null,
+        processadorId: processadorId ? Number(processadorId) : null,
+      },
+    });
+
+    res.status(201).json({ message: "Imagem criada com sucesso", newImagem });
+  } catch (error) {
+    console.error("Erro ao salvar imagem:", error);
+    res.status(500).json({ error: "Erro interno ao salvar imagem" });
+  }
+}
 
   // Atualizar uma imagem existente
   async update(req: Request, res: Response): Promise<void> {

@@ -36,7 +36,7 @@ export class DataController {
     // Criar um novo registro
     async create(req: Request, res: Response): Promise<void> {
         try {
-            const { data, descricao, disponibilidade } = req.body;
+            const { data, disponibilidade } = req.body;
 
             const newData = await prisma.data.create({
                 data: {
@@ -76,15 +76,11 @@ export class DataController {
         try {
             const { id } = req.params;
 
-            const deletedData = await prisma.data.update({
+            await prisma.data.delete({
                 where: { id: Number(id) },
-                data: {
-                    deleted: true,
-                    deletedAt: new Date(),
-                },
             });
 
-            res.status(200).json({ message: 'Data deleted successfully', deletedData });
+            res.status(200).json({ message: 'Data permanently deleted successfully' });
         } catch (error) {
             res.status(500).json({ error: 'Internal server error' });
         }
